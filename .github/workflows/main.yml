@@ -1,0 +1,46 @@
+name: CI/CD for MEAN App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # 3. Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      # 4. Build Angular frontend
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build --configuration=production
+
+      # 5. Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      # 6. Run backend tests (optional)
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test
+
+      # 7. Build & Deploy with Docker Compose
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose -f docker-compose.yml up -d --build
